@@ -1,11 +1,10 @@
 <p align="center">
-  <img src="docs/assets/InnovationHub-HeaderImage.png" width="800" alt="DocuBot AI Documentation Generator">
+  <img src="docs/assets/InnovationHub-HeaderImage.png" width="800" alt="Company logo">
 </p>
 
 # 📚 DocuBot - AI Documentation Generator
 
-AI-powered documentation generation using multi-provider LLMs and specialized micro-agent architecture for comprehensive README creation.
-
+An AI-powered full-stack application that automatically generates high-quality project documentation from source code repositories. Connect a GitHub repo, let specialized micro-agents analyze the codebase, architecture, dependencies, and APIs, and get structured README documentation in minutes, powered by multi-provider LLMs, OpenAI-compatible endpoints, or locally hosted models such as Ollama.
 ---
 
 ## 📋 Table of Contents
@@ -18,7 +17,8 @@ AI-powered documentation generation using multi-provider LLMs and specialized mi
 - [Project Structure](#project-structure)
 - [Usage Guide](#usage-guide)
 - [LLM Provider Configuration](#llm-provider-configuration)
-- [Performance Benchmarks](#performance-benchmarks)
+- [Inference Benchmarks](#inference-benchmarks)
+- [Model Capabilities](#model-capabilities)
 - [Environment Variables](#environment-variables)
 - [Technology Stack](#technology-stack)
 - [Troubleshooting](#troubleshooting)
@@ -28,7 +28,15 @@ AI-powered documentation generation using multi-provider LLMs and specialized mi
 
 ## Project Overview
 
-**DocuBot** is an intelligent documentation generation platform that analyzes GitHub repositories using specialized micro-agents to automatically create comprehensive, well-structured README documentation with minimal human intervention.
+**DocuBot** shows how agentic AI can be applied to one of the most time-consuming software tasks: documentation. The applicatoin analyzes real project evidence from a repository and uses specialized micro-agents to generate structured, context-aware README documentation that is more accurate and maintainable than traditional single-prompt generation.
+
+The application supports a flexible inference layer, allowing it to work with OpenAI, Groq, OpenRouter, custom OpenAI-compatible APIs, and local Ollama deployments. This makes it practical for cloud-based teams, enterprise environments, and privacy-sensitive local setups alike.
+
+This makes DocuBot suitable for:
+
+- **Enterprise teams** — integrate with internal gateways, hosted APIs, or private inference infrastructure
+- **Local experimentation**  — run documentation generation with self-hosted models through Ollama
+- **Hardware benchmarking** — measure SLM throughput on Apple Silicon, CUDA, or Intel Gaudi hardware
 
 ### How It Works
 
@@ -442,20 +450,21 @@ DocuBot/
 
 ### Performance Tips
 
-- **Model Selection**: For faster processing, use `gpt-4o-mini` or Groq's `llama-3.2-90b-text-preview`
-- **Local Development**: Use Ollama with `qwen2.5:7b` for private, offline documentation generation
-- **Monorepo**: Select specific subprojects for focused documentation
-- **PR Creation**: Requires `GITHUB_TOKEN` with `repo` scope in `api/.env`
+- **Use the largest model your hardware can sustain.** `qwen3:14b` produces the best documentation quality; `qwen3:4b` is faster and good for benchmarking.
+- **Lower `LLM_TEMPERATURE`** (e.g., `0.1`) for more factual, evidence-grounded documentation. Raise it slightly (e.g., `0.3–0.5`) for more descriptive, narrative-style README prose.
+- **Keep repositories focused.** The agents analyze up to `MAX_FILES_TO_SCAN` files (default: 500). For large monorepos, use the built-in project selector to target a specific subproject rather than letting agents scan the entire repo.
+- **On Apple Silicon**, always run Ollama natively — never inside Docker. The Metal GPU backend delivers significantly higher throughput for sequential multi-agent workloads compared to CPU-only inference.
+- **On Linux with an NVIDIA GPU**, set `CUDA_VISIBLE_DEVICES` before starting Ollama to target a specific GPU.
+- **For enterprise remote APIs**, choose a model with a large context window (≥16k tokens) to avoid truncation on longer inputs.
 
 ---
 
 ## LLM Provider Configuration
 
-DocuBot supports multiple LLM providers. Choose the one that best fits your needs:
+DocuBot supports multiple LLM providers. All providers are configured via the `.env` file. Set `INFERENCE_PROVIDER=ollama` for local inference.
 
-### OpenAI (Recommended for Production)
 
-**Best for**: Highest quality outputs, production deployments
+### OpenAI
 
 - **Get API Key**: https://platform.openai.com/account/api-keys
 - **Models**: `gpt-4o`, `gpt-4-turbo`, `gpt-4o-mini`
@@ -468,9 +477,9 @@ DocuBot supports multiple LLM providers. Choose the one that best fits your need
   LLM_MODEL=gpt-4o
   ```
 
-### Groq (Fast & Free Tier)
+### Groq
 
-**Best for**: Fast inference, development, free tier testing
+Groq provides OpenAI-compatible endpoints with extremely fast inference (LPU hardware).
 
 - **Get API Key**: https://console.groq.com/keys
 - **Models**: `llama-3.2-90b-text-preview`, `llama-3.1-70b-versatile`
@@ -484,14 +493,13 @@ DocuBot supports multiple LLM providers. Choose the one that best fits your need
   LLM_MODEL=llama-3.2-90b-text-preview
   ```
 
-### Ollama (Local & Private)
+### Ollama
 
-**Best for**: Local deployment, privacy, no API costs, offline operation
+Runs inference locally on the host machine with full GPU acceleration.
 
-- **Install**: https://ollama.com/download
-- **Pull Model**: `ollama pull qwen2.5:7b`
-- **Models**: `qwen2.5:7b`, `llama3.1:8b`, `llama3.2:3b`
-- **Pricing**: Free (local hardware costs only)
+- **Install Ollama**: https://ollama.com/download
+- **Pull Model**: `ollama pull qwen3:14b`
+- **Models**: `qwen3:4b`, `llama3.1:8b`, `llama3.2:3b`
 - **Configuration**:
   ```bash
   LLM_PROVIDER=ollama
@@ -505,15 +513,15 @@ DocuBot supports multiple LLM providers. Choose the one that best fits your need
   curl -fsSL https://ollama.com/install.sh | sh
 
   # Pull model
-  ollama pull qwen2.5:7b
+  ollama pull qwen3:14b
 
-  # Verify it's running
+  # Verify Ollama is running:
   curl http://localhost:11434/api/tags
   ```
 
-### OpenRouter (Multi-Model Access)
+### OpenRouter
 
-**Best for**: Access to multiple models through one API, model flexibility
+OpenRouter provides a unified API across hundreds of models from different providers.
 
 - **Get API Key**: https://openrouter.ai/keys
 - **Models**: Claude, Gemini, GPT-4, Llama, and 100+ others
@@ -539,6 +547,13 @@ LLM_BASE_URL=https://your-custom-endpoint.com/v1
 LLM_MODEL=your-model-name
 ```
 
+If the endpoint uses a private domain mapped in `/etc/hosts`, also set:
+
+```bash
+LOCAL_URL_ENDPOINT=your-private-domain.internal
+```
+
+
 ### Switching Providers
 
 To switch providers, simply update `api/.env` and restart:
@@ -557,27 +572,92 @@ docker compose up -d
 
 ---
 
-## Performance Benchmarks
+## Inference Benchmarks
 
-The following benchmarks were collected by running DocuBot's full 9-agent documentation pipeline across three inference environments. Use these results to choose the right deployment profile for your needs.
+The table below compares inference performance across different providers, deployment modes, and hardware profiles using a standardized DocuBot's full 9-agent documentation pipeline.
 
-> **Note:** Intel Enterprise Inference was tested on Intel Xeon hardware to demonstrate on-premises SLM deployment for enterprise codebases.
-
-### Results
-
-| Model Type / Inference Provider | Model Name | Deployment | Context Window | Avg Input Tokens | Avg Output Tokens | Avg Total Tokens / Request | P50 Latency (ms) | P95 Latency (ms) | Throughput (req/sec) | Hardware Profile |
+| Provider | Model | Deployment | Context Window | Avg Input Tokens | Avg Output Tokens | Avg Total Tokens / Request | P50 Latency (ms) | P95 Latency (ms) | Throughput (req/sec) | Hardware |
 |---|---|---|---|---|---|---|---|---|---|---|
-| vLLM | Qwen3-4B-Instruct-2507 | Local | 262.1K | 3,040 | 307.7 | 5809 | 15,864 | 40,809 | 0.0580 | Apple Silicon (Metal) |
-| Enterprise Inference / SLM · [Intel OPEA EI](https://opea.dev) | Qwen3-4B-Instruct-2507 | CPU (Xeon) | 8.1K | 4,211.9 | 270 | 4481 | 10,540 | 32,205 | 0.076 | CPU-only |
+| vLLM | Qwen3-4B-Instruct-2507 | Local | 262.1K | 3,040 | 307.7 | 5809 | 15,864 | 40,809 | 0.0580 | Apple Silicon (Metal)(Macbook Pro M4) |
+| [Intel OPEA EI](https://github.com/opea-project/Enterprise-Inference) | Qwen3-4B-Instruct-2507 | CPU (Xeon) | 8.1K | 4,211.9 | 270 | 4481 | 10,540 | 32,205 | 0.076 | CPU-only |
 | OpenAI (Cloud) | gpt-4o-mini | API (Cloud) | 128K | 3,820.11 | 316.41 | 4136.52 | 7,760 | 23,535 | 0.108 | N/A |
 
+> **Notes:**
+>
+> - All benchmarks use the same Documentation generation workflow. Token counts may vary slightly per run due to non-deterministic model output.
+> - vLLM on Apple Silicon uses Metal (MPS) GPU acceleration.
+> - [Intel OPEA Enterprise Inference](https://github.com/opea-project/Enterprise-Inference) runs on Intel Xeon CPUs without GPU acceleration.
 
-### Model Capabilities
+---
 
-| Model | Highlights |
-|---|---|
-| **Qwen3-4B-Instruct-2507** | 4B-parameter code-specialized model with 262.1K native context (deployment-limited to 8.1K on Xeon CPU). Supports multi-agent documentation generation, code analysis, and structured JSON output. Enables full on-premises deployment with data sovereignty for enterprise codebases. |
-| **gpt-4o-mini** | Cloud-native multimodal model with 128K context, optimized for code understanding and technical documentation. Delivers 42% higher throughput and 26% lower latency versus CPU-based alternatives while supporting concurrent multi-agent orchestration at cloud scale. |
+## Model Capabilities
+
+### Qwen3-4B-Instruct-2507
+
+A 4-billion-parameter open-weight code model from Alibaba's Qwen team (July 2025 release), designed for on-prem and edge deployment.
+
+
+| Attribute                   | Details                                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Parameters**              | 4.0B total (3.6B non-embedding)                                                                                     |
+| **Architecture**            | Transformer with Grouped Query Attention (GQA) — 36 layers, 32 Q-heads / 8 KV-heads                                 |
+| **Context Window**          | 262,144 tokens (256K) native                                                                                        |
+| **Reasoning Mode**          | Non-thinking only (Instruct-2507 variant). Separate Thinking-2507 variant available with always-on chain-of-thought |
+| **Tool / Function Calling** | Supported; MCP (Model Context Protocol) compatible                                                                  |
+| **Structured Output**       | JSON-structured responses supported                                                                                 |
+| **Multilingual**            | 100+ languages and dialects                                                                                         |
+| **Code Benchmarks**         | MultiPL-E: 76.8%, LiveCodeBench v6: 35.1%, BFCL-v3 (tool use): 61.9                                                 |
+| **Quantization Formats**    | GGUF (Q4_K_M ~2.5 GB, Q8_0 ~4.3 GB), AWQ (int4), GPTQ (int4), MLX (4-bit ~2.3 GB)                                   |
+| **Inference Runtimes**      | Ollama, vLLM, llama.cpp, LMStudio, SGLang, KTransformers                                                            |
+| **Fine-Tuning**             | Full fine-tuning and adapter-based (LoRA); 5,000+ community adapters on HuggingFace                                 |
+| **License**                 | Apache 2.0                                                                                                          |
+| **Deployment**              | Local, on-prem, air-gapped, cloud — full data sovereignty                                                           |
+
+
+### GPT-4o-mini
+
+OpenAI's cost-efficient multimodal model, accessible exclusively via cloud API.
+
+
+| Attribute                   | Details                                                                           |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| **Parameters**              | Not publicly disclosed                                                            |
+| **Architecture**            | Multimodal Transformer (text + image input, text output)                          |
+| **Context Window**          | 128,000 tokens input / 16,384 tokens max output                                   |
+| **Reasoning Mode**          | Standard inference (no explicit chain-of-thought toggle)                          |
+| **Tool / Function Calling** | Supported; parallel function calling                                              |
+| **Structured Output**       | JSON mode and strict JSON schema adherence supported                              |
+| **Multilingual**            | Broad multilingual support                                                        |
+| **Code Benchmarks**         | MMMLU: ~87%, strong HumanEval and MBPP scores                                     |
+| **Pricing**                 | $0.15 / 1M input tokens, $0.60 / 1M output tokens (Batch API: 50% discount)       |
+| **Fine-Tuning**             | Supervised fine-tuning via OpenAI API                                             |
+| **License**                 | Proprietary (OpenAI Terms of Use)                                                 |
+| **Deployment**              | Cloud-only — OpenAI API or Azure OpenAI Service. No self-hosted or on-prem option |
+| **Knowledge Cutoff**        | October 2023                                                                      |
+
+
+### Comparison Summary
+
+
+| Capability                      | Qwen3-4B-Instruct-2507           | GPT-4o-mini                       |
+| ------------------------------- | -------------------------------- | --------------------------------- |
+| Code Analysis & Documentation Generation | Yes                     | Yes                               |
+| Multi-agent / agentic task execution |  Yes                        | Yes                               |
+| Mermaid / architecture diagram Generation | Yes               | Yes                                    |
+| Function / tool calling         | Yes                              | Yes                               |
+| JSON structured output          | Yes                              | Yes                               |
+| On-prem / air-gapped deployment | Yes                              | No                                |
+| Data sovereignty                | Full (weights run locally)       | No (data sent to cloud API)       |
+| Open weights                    | Yes (Apache 2.0)                 | No (proprietary)                  |
+| Custom fine-tuning              | Full fine-tuning + LoRA adapters | Supervised fine-tuning (API only) |
+| Quantization for edge devices   | GGUF / AWQ / GPTQ / MLX          | N/A                               |
+| Multimodal (image input)        | No                               | Yes                               |
+| Native context window           | 256K                             | 128K                              |
+
+
+> Both models support Code Analysis & Documentation Generation, Multi-agent / agentic task execution, Mermaid diagram generation, function calling, and JSON-structured output. However, only Qwen3-4B offers open weights, data sovereignty, and local deployment flexibility — making it suitable for air-gapped, regulated, or cost-sensitive environments. GPT-4o-mini offers lower latency and higher throughput via OpenAI's cloud infrastructure, with added multimodal capabilities.
+
+---
 
 ## Environment Variables
 
