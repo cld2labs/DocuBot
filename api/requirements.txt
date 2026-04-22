@@ -18,7 +18,7 @@ langchain-community>=0.0.20
 
 # LLM APIs
 openai>=1.10.0
-httpx>=0.24.0
+httpx>=0.28.1
 requests>=2.31.0
 
 # Git Operations
