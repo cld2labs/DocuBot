@@ -13,7 +13,7 @@ pydantic-settings>=2.1.0
 langchain>=0.1.0
 langchain-openai>=0.0.5
 langgraph>=0.0.20
-langgraph-checkpoint-sqlite>=1.0.0
+langgraph-checkpoint-sqlite>=3.0.3
 langchain-community>=0.0.20
 
 # LLM APIs
