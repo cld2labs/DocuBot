@@ -7,7 +7,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 12 * * 5'
 
 concurrency:
   group: sdle-${{ github.event.pull_request.number || github.ref }}
