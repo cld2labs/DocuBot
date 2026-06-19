@@ -55,7 +55,7 @@ jobs:
         if: |
           steps.classify.outputs.update-type == 'version-update:semver-patch' ||
           steps.classify.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: gh pr merge --auto --squash --admin "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
