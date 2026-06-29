@@ -51,11 +51,20 @@ jobs:
 
           echo "update-type=$UPDATE_TYPE" >> "$GITHUB_OUTPUT"
 
+      - name: Approve PR as github-actions (satisfies one review slot)
+        if: |
+          steps.classify.outputs.update-type == 'version-update:semver-patch' ||
+          steps.classify.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Enable auto-merge for minor and patch updates
         if: |
           steps.classify.outputs.update-type == 'version-update:semver-patch' ||
           steps.classify.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --squash --admin "$PR_URL"
+        run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

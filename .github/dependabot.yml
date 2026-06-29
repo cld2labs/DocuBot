@@ -4,7 +4,7 @@ updates:
     directory: /api
     schedule:
       interval: weekly
-      day: monday
+      day: friday
       time: "06:00"
       timezone: "America/Chicago"
     open-pull-requests-limit: 5
@@ -27,7 +27,7 @@ updates:
     directory: /ui
     schedule:
       interval: weekly
-      day: monday
+      day: friday
       time: "06:00"
       timezone: "America/Chicago"
     open-pull-requests-limit: 5
@@ -50,7 +50,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
-      day: monday
+      day: friday
     open-pull-requests-limit: 3
     labels:
       - dependencies
@@ -62,7 +62,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
-      day: monday
+      day: friday
     open-pull-requests-limit: 3
     labels:
       - dependencies
